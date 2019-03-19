@@ -11,8 +11,8 @@ class KMeansCluster(cluster):
     def fit(self, X):
         n = X.shape[0]
         c = X.shape[1]
-        mean = np.mean(X)
-        std = np.std(X)
+        mean = np.mean(X, axis=0)
+        std = np.std(X, axis=0)
         centroids = std * np.random.randn(self.k, c) + mean
         centroids_pre = np.zeros(centroids.shape)
         clusters = np.zeros(n, dtype=int)
@@ -20,9 +20,9 @@ class KMeansCluster(cluster):
         while iter_Num < self.max_iterations:
             for i in range(n):
                 dist_min = np.linalg.norm(X[i] - centroids[0])
-                for t in range(1, self.k):
+                for t in range(self.k):
                     dist = np.linalg.norm(X[i] - centroids[t])
-                    if dist < dist_min:
+                    if dist <= dist_min:
                         dist_min = dist
                         clusters[i] = t
             centroids_pre = deepcopy(centroids)
