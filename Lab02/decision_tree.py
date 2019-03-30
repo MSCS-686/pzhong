@@ -4,7 +4,11 @@ import numpy as np
 class decision_tree(classifier):
 
     def __init__(self, criterion='entropy'):
-        self.criterion = criterion
+        if criterion == 'entropy' or criterion == 'gini':
+            self.criterion = criterion
+            self.tree = dict()
+        else:
+            raise Exception("criterion has not attribute ", criterion)
 
     def gini(self, Y):
         size = len(Y)
@@ -35,33 +39,38 @@ class decision_tree(classifier):
             entropy -= prob * log(prob,2)
         return entropy
 
+    def result(self, Y):
+        if self.criterion == 'entropy':
+            return self.entropy(Y)
+        else:
+            return self.gini(Y)
 
     def split_data(self, X, Y, axis, value):
-        return_x = np.array([])
-        return_y = np.array([])
+        return_x = []
+        return_y = []
 
-        for x, y in (zip(X, Y)):
+        for x, y in (zip(X.tolist(), Y.tolist())):
             if x[axis] == value:
                 reduced_x = x[:axis]
-                reduced_x = np.append(reduced_x, x[axis+1:])
-                return_x = np.append(return_x, reduced_x, axis=0)
-                return_y = np.append(return_y, y)
-        return return_x, return_y
+                reduced_x.extend(x[axis+1:])
+                return_x.append(reduced_x)
+                return_y.append(y)
+        return np.array(return_x), np.array(return_y)
 
 
     def choose_feature(self, X, Y):
-        entropy = self.entropy(Y)
+        result = self.result(Y)
         best_information_gain = 0.
         best_feature = -1
         for i in range(len(X[0])):  # For each feature
             feature_list = [x[i] for x in X]
             values = set(feature_list)
-            entropy_i = 0.
+            result_i = 0.
             for value in values:
                 sub_x, sub_y = self.split_data(X, Y, i, value)
                 prob = len(sub_x) / float(len(X))
-                entropy_i += prob * self.entropy(sub_y)
-            info_gain = entropy - entropy_i
+                result_i += prob * self.result(sub_y)
+            info_gain = result - result_i
             if info_gain > best_information_gain:
                 best_information_gain = info_gain
                 best_feature = i
@@ -81,23 +90,22 @@ class decision_tree(classifier):
         from operator import itemgetter
         # Use this function if a leaf cannot be split further and
         # ... the node is not pure
-
         classcount = self.class_dict(Y)
-        sorted_classcount = sorted(classcount, key=itemgetter(1), reverse=True)
+        sorted_classcount = sorted(classcount.items(), key=itemgetter(1), reverse=True)
         return sorted_classcount[0][0]
 
 
     def build_tree(self, X, Y):
         # IF there's only one instance or one class, don't continue to split
         if len(Y) <= 1 or len(self.class_dict(Y)) == 1:
-            return
+            return Y[0]
 
         if len(X[0]) == 1:
             return self.majority(Y)   # TODO: Fix this
 
         best_feature = self.choose_feature(X, Y)
         if best_feature < 0 or best_feature >= len(X[0]):
-            return
+            return self.majority(Y)
 
         this_tree = dict()
         feature_values = [example[best_feature] for example in X]
@@ -110,12 +118,25 @@ class decision_tree(classifier):
             if value not in this_tree[best_feature]:
                 this_tree[best_feature][value] = 0
             this_tree[best_feature][value] = self.build_tree(subtree_x, subtree_y)
+        return this_tree
 
 
     def fit(self, X, Y):
-        self.build_tree(X, Y)
-
+        self.tree = self.build_tree(X, Y)
+        
 
     def predict(self, X):
-        pass
+        hyps = np.array([])
+        for x in X:
+            hyps = np.append(hyps, [self.predict_sub(self.tree, x)])
+        return hyps
+            
 
+    def predict_sub(self, tree, x):
+        for k, v in tree.items():
+            if x[k] not in v:
+                return -1
+            if isinstance(v[x[k]], dict):
+                return self.predict_sub(v[x[k]], np.append(x[:k], x[k+1:]))
+            else:
+                return v[x[k]]
