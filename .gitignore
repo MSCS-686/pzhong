@@ -9,3 +9,8 @@ Lab01/CS 686 - Lab 01 - k-means.pdf
 Lab02/CS 686 - Lab 02 - Decision Trees.pdf
 hw4/CS 686 - Assignment 04 - ML general.pdf
 Lab03/CS 686 - Lab 03 - Perceptron.pdf
+.vscode/settings.json
+hw4/.ipynb_checkpoints/hw4-checkpoint.ipynb
+Lab03/.ipynb_checkpoints/test-checkpoint.ipynb
+Lab03/__pycache__/classifier.cpython-36.pyc
+Lab03/__pycache__/perceptron.cpython-36.pyc
