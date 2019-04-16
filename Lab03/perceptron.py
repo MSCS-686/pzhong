@@ -28,11 +28,11 @@ class perceptron(classifier):
         return self.activation(s)
         
     def activation(self, x):
-        result = self.sigma(x)
+        result = self.sigmoid(x)
         if result > 0.5:
             return 1
         else:
             return 0
     
-    def sigma(self, x):
+    def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
