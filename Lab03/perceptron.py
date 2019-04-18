@@ -15,7 +15,6 @@ class perceptron(classifier):
                 hyp = self.activation(s)
                 self.weights[1:] += self.learning_rate * (y - hyp) * x
                 self.weights[0] += self.learning_rate * (y - hyp)
-        return self.weights
 
     def predict(self, X):
         hyps = []
@@ -33,6 +32,12 @@ class perceptron(classifier):
             return 1
         else:
             return 0
+
+    def get_weights(self):
+        return self.weights[1:]
+
+    def get_bias(self):
+        return self.weights[0]
     
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
